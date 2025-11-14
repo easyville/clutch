@@ -23,7 +23,7 @@ export default function Profile() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 py-4">
@@ -127,7 +127,7 @@ export default function Profile() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
         <div className="max-w-2xl mx-auto px-2 py-2">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             <Link href="/" className="flex flex-col items-center py-2 text-gray-500">
               <span className="text-2xl mb-1">💼</span>
               <span className="text-xs font-medium">Offers</span>
@@ -135,6 +135,10 @@ export default function Profile() {
             <Link href="/requests" className="flex flex-col items-center py-2 text-gray-500">
               <span className="text-2xl mb-1">🙋</span>
               <span className="text-xs font-medium">Requests</span>
+            </Link>
+            <Link href="/exchanges" className="flex flex-col items-center py-2 text-gray-500">
+              <span className="text-2xl mb-1">💬</span>
+              <span className="text-xs font-medium">Exchanges</span>
             </Link>
             <Link href="/add" className="flex flex-col items-center py-2 text-gray-500">
               <span className="text-2xl mb-1">➕</span>

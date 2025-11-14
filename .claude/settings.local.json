@@ -9,5 +9,9 @@
     ],
     "deny": [],
     "ask": []
-  }
+  },
+  "enabledMcpjsonServers": [
+    "tessl"
+  ],
+  "enableAllProjectMcpServers": true
 }

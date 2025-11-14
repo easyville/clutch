@@ -35,7 +35,7 @@ export default function AddListing() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
         <div className="max-w-2xl mx-auto px-4 py-4">
@@ -84,46 +84,56 @@ export default function AddListing() {
             </div>
           </div>
 
-          {/* Category Selection: Only show if Offer is selected */}
-          {type === 'offer' && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-3">
-                What are you offering?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCategory('skill')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    category === 'skill'
+          {/* Category Selection: Show for both Offer and Request */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              {type === 'offer' ? 'What are you offering?' : 'What do you need?'}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setCategory('skill')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  category === 'skill'
+                    ? type === 'offer'
                       ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">🎓</div>
-                  <div className={`text-base font-semibold ${category === 'skill' ? 'text-blue-900' : 'text-gray-700'}`}>
-                    Help
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">Skills & services</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategory('item')}
-                  className={`p-4 rounded-lg border-2 transition-all ${
-                    category === 'item'
-                      ? 'border-green-600 bg-green-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">📦</div>
-                  <div className={`text-base font-semibold ${category === 'item' ? 'text-green-900' : 'text-gray-700'}`}>
-                    Item
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">Things to share</div>
-                </button>
-              </div>
+                      : 'border-orange-600 bg-orange-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="text-3xl mb-2">🎓</div>
+                <div className={`text-base font-semibold ${
+                  category === 'skill'
+                    ? type === 'offer'
+                      ? 'text-blue-900'
+                      : 'text-orange-900'
+                    : 'text-gray-700'
+                }`}>
+                  Help
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {type === 'offer' ? 'Skills & services' : 'Need assistance'}
+                </div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('item')}
+                className={`p-4 rounded-lg border-2 transition-all ${
+                  category === 'item'
+                    ? 'border-green-600 bg-green-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="text-3xl mb-2">📦</div>
+                <div className={`text-base font-semibold ${category === 'item' ? 'text-green-900' : 'text-gray-700'}`}>
+                  Item
+                </div>
+                <div className="text-xs text-gray-500 mt-1">
+                  {type === 'offer' ? 'Things to share' : 'Need to borrow'}
+                </div>
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Title */}
           <div>
@@ -137,7 +147,9 @@ export default function AddListing() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder={
                 type === 'request'
-                  ? 'e.g., Need Help Moving Furniture'
+                  ? category === 'skill'
+                    ? 'e.g., Need Math Tutoring Help'
+                    : 'e.g., Looking for Laptop Charger'
                   : category === 'skill'
                   ? 'e.g., Math Tutoring Available'
                   : 'e.g., Extra Textbooks to Share'
@@ -246,7 +258,7 @@ export default function AddListing() {
       {/* Bottom Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
         <div className="max-w-2xl mx-auto px-2 py-2">
-          <div className="grid grid-cols-4 gap-1">
+          <div className="grid grid-cols-5 gap-1">
             <Link href="/" className="flex flex-col items-center py-2 text-gray-500">
               <span className="text-2xl mb-1">💼</span>
               <span className="text-xs font-medium">Offers</span>
@@ -254,6 +266,10 @@ export default function AddListing() {
             <Link href="/requests" className="flex flex-col items-center py-2 text-gray-500">
               <span className="text-2xl mb-1">🙋</span>
               <span className="text-xs font-medium">Requests</span>
+            </Link>
+            <Link href="/exchanges" className="flex flex-col items-center py-2 text-gray-500">
+              <span className="text-2xl mb-1">💬</span>
+              <span className="text-xs font-medium">Exchanges</span>
             </Link>
             <Link href="/add" className="flex flex-col items-center py-2 text-blue-600">
               <span className="text-2xl mb-1">➕</span>

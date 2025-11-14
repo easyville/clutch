@@ -1,5 +1,14 @@
 // Dummy data for TradePal prototype
 
+// Utility function to abbreviate names for privacy (e.g., "Sarah Chen" -> "Sarah C.")
+export function abbreviateName(fullName: string): string {
+  const parts = fullName.trim().split(' ')
+  if (parts.length === 1) return parts[0] // Only first name
+  const firstName = parts[0]
+  const lastInitial = parts[parts.length - 1][0] // Get first letter of last name
+  return `${firstName} ${lastInitial}.`
+}
+
 export interface Listing {
   id: string
   userId: string
@@ -10,6 +19,14 @@ export interface Listing {
   category: 'skill' | 'item' | 'need'
   tags: string[]
   createdAt: string
+}
+
+export interface ContactInfo {
+  fullName: string
+  email?: string
+  phone?: string
+  instagram?: string
+  snapchat?: string
 }
 
 export const currentUser = {
@@ -129,4 +146,118 @@ export const myInterests = [
   'Spanish Practice',
   'Essay Proofreading',
   'Graphic Design',
+]
+
+export interface Exchange {
+  id: string
+  listingId: string
+  listingTitle: string
+  listingCategory: 'skill' | 'item' | 'need'
+  otherUserId: string
+  otherUserName: string
+  otherUserAvatar: string
+  type: 'sent' | 'received'
+  status: 'pending' | 'approved' | 'rejected'
+  message: string
+  createdAt: string
+  contactInfo?: ContactInfo // Only available when status is 'approved'
+}
+
+// Offers/exchanges you've sent to others
+export const sentExchanges: Exchange[] = [
+  {
+    id: 'e1',
+    listingId: '3',
+    listingTitle: 'Guitar Lessons',
+    listingCategory: 'skill',
+    otherUserId: '2',
+    otherUserName: 'Sarah Chen',
+    otherUserAvatar: '👩',
+    type: 'sent',
+    status: 'approved',
+    message: 'Hi! I can help you with Spanish conversation practice in exchange for guitar lessons.',
+    createdAt: '2d ago',
+    contactInfo: {
+      fullName: 'Sarah Chen',
+      email: 'sc21234@essex.ac.uk',
+      phone: '07123 456789',
+      instagram: '@sarahplaysguitar',
+    },
+  },
+  {
+    id: 'e2',
+    listingId: '6',
+    listingTitle: 'Car Rides to Campus',
+    listingCategory: 'skill',
+    otherUserId: '5',
+    otherUserName: 'Marcus Brown',
+    otherUserAvatar: '🧑',
+    type: 'sent',
+    status: 'pending',
+    message: 'I\'d love a ride on Mondays and Wednesdays! I can bring you coffee.',
+    createdAt: '1d ago',
+  },
+  {
+    id: 'e3',
+    listingId: '7',
+    listingTitle: 'Extra Textbooks',
+    listingCategory: 'item',
+    otherUserId: '6',
+    otherUserName: 'Lily Zhang',
+    otherUserAvatar: '👧',
+    type: 'sent',
+    status: 'rejected',
+    message: 'Would love to borrow the ECON textbook. I can share some snacks!',
+    createdAt: '3d ago',
+  },
+]
+
+// Offers/exchanges you've received from others
+export const receivedExchanges: Exchange[] = [
+  {
+    id: 'e4',
+    listingId: '1',
+    listingTitle: 'Math Tutoring Available',
+    listingCategory: 'skill',
+    otherUserId: '9',
+    otherUserName: 'Chris Johnson',
+    otherUserAvatar: '🧑‍💼',
+    type: 'received',
+    status: 'pending',
+    message: 'I really need help with calculus! Can I take you up on your tutoring offer? I can proofread your essays.',
+    createdAt: '1h ago',
+  },
+  {
+    id: 'e5',
+    listingId: '2',
+    listingTitle: 'Need Help Moving Furniture',
+    listingCategory: 'need',
+    otherUserId: '10',
+    otherUserName: 'Maya Patel',
+    otherUserAvatar: '👩‍💻',
+    type: 'received',
+    status: 'pending',
+    message: 'I can help you move this weekend! Those cookies sound great :)',
+    createdAt: '4h ago',
+  },
+  {
+    id: 'e6',
+    listingId: '1',
+    listingTitle: 'Math Tutoring Available',
+    listingCategory: 'skill',
+    otherUserId: '4',
+    otherUserName: 'Emma Wilson',
+    otherUserAvatar: '👱',
+    type: 'received',
+    status: 'approved',
+    message: 'Can you help me with statistics? I can design a logo for you!',
+    createdAt: '2d ago',
+    contactInfo: {
+      fullName: 'Emma Wilson',
+      email: 'ew20987@essex.ac.uk',
+      phone: '07845 123456',
+      instagram: '@emmacreates',
+      snapchat: 'emma_designs',
+    },
+  },
 ]
