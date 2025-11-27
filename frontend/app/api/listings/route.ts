@@ -62,7 +62,7 @@ export async function POST(request: NextRequest) {
       description,
       category: type === 'request' ? 'need' : category,
       type,
-      tags: tags || [],
+      tags: (tags || []).map((t: string) => t.toLowerCase()),
       createdAt: new Date().toISOString(),
       userId: user.id,
       userName: user.name,

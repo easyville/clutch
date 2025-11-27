@@ -87,12 +87,9 @@ export default function AdminPage() {
       const data = await res.json()
       if (data.success) {
         setListings(prev => prev.filter(l => l.id !== id))
-        setMessage('Listing deleted!')
-        setTimeout(() => setMessage(''), 2000)
       }
     } catch (error) {
       console.error('Delete error:', error)
-      setMessage('Failed to delete')
     } finally {
       setDeletingId(null)
     }
