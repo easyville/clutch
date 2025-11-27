@@ -163,7 +163,7 @@ export const db = {
   async createListing(listing: Listing): Promise<Listing> {
     if (isKVAvailable()) {
       try {
-        await kv.hset(`listing:${listing.id}`, listing as Record<string, unknown>)
+        await kv.hset(`listing:${listing.id}`, listing as unknown as Record<string, unknown>)
         await kv.sadd('listing_ids', listing.id)
         return listing
       } catch (error) {
@@ -200,7 +200,7 @@ export const db = {
     if (isKVAvailable()) {
       try {
         for (const listing of SEED_DATA) {
-          await kv.hset(`listing:${listing.id}`, listing as Record<string, unknown>)
+          await kv.hset(`listing:${listing.id}`, listing as unknown as Record<string, unknown>)
           await kv.sadd('listing_ids', listing.id)
         }
       } catch (error) {
