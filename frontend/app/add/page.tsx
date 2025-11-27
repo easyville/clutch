@@ -1,15 +1,22 @@
 'use client'
 
-import Link from 'next/link'
 import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/lib/auth-context'
+import { ProtectedRoute } from '@/components/protected-route'
+import { BottomNav } from '@/components/bottom-nav'
 
-export default function AddListing() {
+function AddListingPage() {
+  const { user } = useAuth()
+  const router = useRouter()
   const [type, setType] = useState<'offer' | 'request'>('offer')
   const [category, setCategory] = useState<'skill' | 'item'>('skill')
   const [title, setTitle] = useState('')
   const [description, setDescription] = useState('')
   const [tags, setTags] = useState<string[]>([])
   const [tagInput, setTagInput] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [error, setError] = useState('')
 
   const handleAddTag = () => {
     if (tagInput.trim() && tags.length < 5) {
@@ -22,30 +29,71 @@ export default function AddListing() {
     setTags(tags.filter((_, i) => i !== index))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // In prototype, just show alert
-    alert('Listing created! (This is a prototype - no backend yet)')
-    // Reset form
-    setTitle('')
-    setDescription('')
-    setTags([])
-    setType('offer')
-    setCategory('skill')
+    setError('')
+    setIsSubmitting(true)
+
+    try {
+      const finalCategory = type === 'request' ? 'need' : category
+
+      const res = await fetch('/api/listings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          description,
+          category: finalCategory,
+          type,
+          tags,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (data.success) {
+        // Redirect to the appropriate page
+        if (type === 'request') {
+          router.push('/requests')
+        } else {
+          router.push('/')
+        }
+      } else {
+        setError(data.error || 'Failed to create listing')
+      }
+    } catch (err) {
+      console.error('Create listing error:', err)
+      setError('Network error. Please try again.')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <div className="min-h-screen bg-gray-50 overflow-x-hidden">
       {/* Header */}
-      <header className="sticky top-0 z-10 bg-white border-b border-gray-200">
+      <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-4 py-4">
           <h1 className="text-2xl font-bold text-gray-900">Add Listing</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Share what you offer or need</p>
         </div>
       </header>
 
       <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
+        {/* Your Contact Info Notice */}
+        <div className="mb-6 p-4 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl">
+          <div className="flex items-start gap-3">
+            <span className="text-xl">📧</span>
+            <div>
+              <h3 className="font-semibold text-orange-900 text-sm mb-1">Your contact email</h3>
+              <p className="text-orange-800 text-sm font-medium">{user?.email}</p>
+              <p className="text-orange-600 text-xs mt-1">Other students will see this to contact you.</p>
+            </div>
+          </div>
+        </div>
+
         <form onSubmit={handleSubmit} className="space-y-6">
-          {/* Type Selection: Offer or Request */}
+          {/* Type Selection */}
           <div>
             <label className="block text-sm font-semibold text-gray-900 mb-3">
               What would you like to do?
@@ -54,14 +102,14 @@ export default function AddListing() {
               <button
                 type="button"
                 onClick={() => setType('offer')}
-                className={`p-4 rounded-lg border-2 transition-all ${
+                className={`p-4 rounded-2xl border-2 transition-all ${
                   type === 'offer'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-orange-500 bg-orange-50'
+                    : 'border-gray-200 bg-white hover:border-orange-300'
                 }`}
               >
                 <div className="text-3xl mb-2">💼</div>
-                <div className={`text-base font-semibold ${type === 'offer' ? 'text-blue-900' : 'text-gray-700'}`}>
+                <div className={`text-base font-semibold ${type === 'offer' ? 'text-orange-900' : 'text-gray-700'}`}>
                   Offer
                 </div>
                 <div className="text-xs text-gray-500 mt-1">I can help or share</div>
@@ -69,14 +117,14 @@ export default function AddListing() {
               <button
                 type="button"
                 onClick={() => setType('request')}
-                className={`p-4 rounded-lg border-2 transition-all ${
+                className={`p-4 rounded-2xl border-2 transition-all ${
                   type === 'request'
-                    ? 'border-orange-600 bg-orange-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
+                    ? 'border-rose-500 bg-rose-50'
+                    : 'border-gray-200 bg-white hover:border-rose-300'
                 }`}
               >
                 <div className="text-3xl mb-2">🙋</div>
-                <div className={`text-base font-semibold ${type === 'request' ? 'text-orange-900' : 'text-gray-700'}`}>
+                <div className={`text-base font-semibold ${type === 'request' ? 'text-rose-900' : 'text-gray-700'}`}>
                   Request
                 </div>
                 <div className="text-xs text-gray-500 mt-1">I need help</div>
@@ -84,56 +132,46 @@ export default function AddListing() {
             </div>
           </div>
 
-          {/* Category Selection: Show for both Offer and Request */}
-          <div>
-            <label className="block text-sm font-semibold text-gray-900 mb-3">
-              {type === 'offer' ? 'What are you offering?' : 'What do you need?'}
-            </label>
-            <div className="grid grid-cols-2 gap-3">
-              <button
-                type="button"
-                onClick={() => setCategory('skill')}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  category === 'skill'
-                    ? type === 'offer'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-orange-600 bg-orange-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-3xl mb-2">🎓</div>
-                <div className={`text-base font-semibold ${
-                  category === 'skill'
-                    ? type === 'offer'
-                      ? 'text-blue-900'
-                      : 'text-orange-900'
-                    : 'text-gray-700'
-                }`}>
-                  Help
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {type === 'offer' ? 'Skills & services' : 'Need assistance'}
-                </div>
-              </button>
-              <button
-                type="button"
-                onClick={() => setCategory('item')}
-                className={`p-4 rounded-lg border-2 transition-all ${
-                  category === 'item'
-                    ? 'border-green-600 bg-green-50'
-                    : 'border-gray-200 bg-white hover:border-gray-300'
-                }`}
-              >
-                <div className="text-3xl mb-2">📦</div>
-                <div className={`text-base font-semibold ${category === 'item' ? 'text-green-900' : 'text-gray-700'}`}>
-                  Item
-                </div>
-                <div className="text-xs text-gray-500 mt-1">
-                  {type === 'offer' ? 'Things to share' : 'Need to borrow'}
-                </div>
-              </button>
+          {/* Category Selection - Only show for offers */}
+          {type === 'offer' && (
+            <div>
+              <label className="block text-sm font-semibold text-gray-900 mb-3">
+                What are you offering?
+              </label>
+              <div className="grid grid-cols-2 gap-3">
+                <button
+                  type="button"
+                  onClick={() => setCategory('skill')}
+                  className={`p-4 rounded-2xl border-2 transition-all ${
+                    category === 'skill'
+                      ? 'border-orange-500 bg-orange-50'
+                      : 'border-gray-200 bg-white hover:border-gray-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">🎓</div>
+                  <div className={`text-base font-semibold ${category === 'skill' ? 'text-orange-900' : 'text-gray-700'}`}>
+                    Skill
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Help & services</div>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCategory('item')}
+                  className={`p-4 rounded-2xl border-2 transition-all ${
+                    category === 'item'
+                      ? 'border-amber-500 bg-amber-50'
+                      : 'border-gray-200 bg-white hover:border-amber-300'
+                  }`}
+                >
+                  <div className="text-3xl mb-2">📦</div>
+                  <div className={`text-base font-semibold ${category === 'item' ? 'text-amber-900' : 'text-gray-700'}`}>
+                    Item
+                  </div>
+                  <div className="text-xs text-gray-500 mt-1">Things to share</div>
+                </button>
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Title */}
           <div>
@@ -147,15 +185,13 @@ export default function AddListing() {
               onChange={(e) => setTitle(e.target.value)}
               placeholder={
                 type === 'request'
-                  ? category === 'skill'
-                    ? 'e.g., Need Math Tutoring Help'
-                    : 'e.g., Looking for Laptop Charger'
+                  ? 'e.g., Need Math Tutoring Help'
                   : category === 'skill'
                   ? 'e.g., Math Tutoring Available'
                   : 'e.g., Extra Textbooks to Share'
               }
               required
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
             />
           </div>
 
@@ -175,11 +211,11 @@ export default function AddListing() {
               }
               required
               rows={5}
-              className="w-full px-4 py-3 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 resize-none shadow-sm"
+              className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent resize-none transition-all"
             />
-            <div className="mt-2 text-xs text-gray-600 flex items-start gap-1">
+            <div className="mt-2 text-xs text-gray-500 flex items-start gap-1">
               <span>⚠️</span>
-              <span>Academic integrity reminder: No assignment writing or cheating services allowed</span>
+              <span>No assignment writing or cheating services allowed</span>
             </div>
           </div>
 
@@ -201,13 +237,13 @@ export default function AddListing() {
                 }}
                 placeholder="Add a tag..."
                 disabled={tags.length >= 5}
-                className="flex-1 px-4 py-2 rounded-lg border border-gray-300 bg-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-500 shadow-sm"
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent disabled:bg-gray-100 disabled:text-gray-400 transition-all"
               />
               <button
                 type="button"
                 onClick={handleAddTag}
                 disabled={!tagInput.trim() || tags.length >= 5}
-                className="px-5 py-2 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-sm"
+                className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-xl font-medium hover:bg-gray-200 disabled:bg-gray-100 disabled:text-gray-400 disabled:cursor-not-allowed transition-colors"
               >
                 Add
               </button>
@@ -217,13 +253,13 @@ export default function AddListing() {
                 {tags.map((tag, index) => (
                   <span
                     key={index}
-                    className="inline-flex items-center gap-1 px-3 py-1 bg-gray-100 text-gray-700 rounded-full text-sm"
+                    className="inline-flex items-center gap-1 px-3 py-1 bg-orange-100 text-orange-700 rounded-full text-sm"
                   >
                     {tag}
                     <button
                       type="button"
                       onClick={() => handleRemoveTag(index)}
-                      className="text-gray-500 hover:text-gray-700"
+                      className="text-orange-500 hover:text-orange-700"
                     >
                       ✕
                     </button>
@@ -233,20 +269,39 @@ export default function AddListing() {
             )}
           </div>
 
+          {/* Error Message */}
+          {error && (
+            <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
+              <p className="text-red-600 text-sm">{error}</p>
+            </div>
+          )}
+
           {/* Submit Button */}
           <button
             type="submit"
-            disabled={!title.trim() || !description.trim()}
-            className="w-full py-3 bg-blue-600 text-white rounded-lg font-semibold hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors shadow-sm"
+            disabled={!title.trim() || !description.trim() || isSubmitting}
+            className="w-full py-3.5 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl font-semibold hover:from-orange-600 hover:to-amber-600 disabled:from-gray-300 disabled:to-gray-300 disabled:cursor-not-allowed transition-all shadow-lg shadow-orange-500/30 disabled:shadow-none"
           >
-            Post Listing
+            {isSubmitting ? (
+              <span className="flex items-center justify-center gap-2">
+                <svg className="animate-spin h-5 w-5" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+                </svg>
+                Posting...
+              </span>
+            ) : (
+              'Post Listing'
+            )}
           </button>
         </form>
 
         {/* Tips */}
-        <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="font-semibold text-blue-900 mb-2">💡 Tips for great listings</h3>
-          <ul className="text-sm text-blue-800 space-y-1">
+        <div className="mt-6 p-4 bg-white rounded-2xl border border-gray-100">
+          <h3 className="font-semibold text-gray-900 mb-2 flex items-center gap-2">
+            <span>💡</span> Tips for great listings
+          </h3>
+          <ul className="text-sm text-gray-600 space-y-1.5">
             <li>• Be specific about what you offer and what you need</li>
             <li>• Use clear, descriptive titles</li>
             <li>• Mention your availability</li>
@@ -255,33 +310,15 @@ export default function AddListing() {
         </div>
       </div>
 
-      {/* Bottom Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 safe-area-inset-bottom">
-        <div className="max-w-2xl mx-auto px-2 py-2">
-          <div className="grid grid-cols-5 gap-1">
-            <Link href="/" className="flex flex-col items-center py-2 text-gray-500">
-              <span className="text-2xl mb-1">💼</span>
-              <span className="text-xs font-medium">Offers</span>
-            </Link>
-            <Link href="/requests" className="flex flex-col items-center py-2 text-gray-500">
-              <span className="text-2xl mb-1">🙋</span>
-              <span className="text-xs font-medium">Requests</span>
-            </Link>
-            <Link href="/exchanges" className="flex flex-col items-center py-2 text-gray-500">
-              <span className="text-2xl mb-1">💬</span>
-              <span className="text-xs font-medium">Exchanges</span>
-            </Link>
-            <Link href="/add" className="flex flex-col items-center py-2 text-blue-600">
-              <span className="text-2xl mb-1">➕</span>
-              <span className="text-xs font-medium">Add</span>
-            </Link>
-            <Link href="/profile" className="flex flex-col items-center py-2 text-gray-500">
-              <span className="text-2xl mb-1">👤</span>
-              <span className="text-xs font-medium">Profile</span>
-            </Link>
-          </div>
-        </div>
-      </nav>
+      <BottomNav />
     </div>
+  )
+}
+
+export default function AddListing() {
+  return (
+    <ProtectedRoute>
+      <AddListingPage />
+    </ProtectedRoute>
   )
 }

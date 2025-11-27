@@ -16,32 +16,50 @@ interface Listing {
   userId: string
   userName: string
   userEmail: string
+  savedAt?: string
 }
 
-function RequestsPage() {
+function SavedPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
-  const [searchQuery, setSearchQuery] = useState('')
-  const { toggleSave, isSaved } = useSaved()
+  const { toggleSave, isSaved, refresh } = useSaved()
 
-  const fetchListings = useCallback(async () => {
+  const fetchSavedListings = useCallback(async () => {
     try {
-      const res = await fetch('/api/listings?type=request')
+      const res = await fetch('/api/saved')
       const data = await res.json()
       
       if (data.success) {
-        setListings(data.listings)
+        setListings(data.savedListings || [])
       }
     } catch (error) {
-      console.error('Failed to fetch listings:', error)
+      console.error('Failed to fetch saved listings:', error)
     } finally {
       setIsLoading(false)
     }
   }, [])
 
   useEffect(() => {
-    fetchListings()
-  }, [fetchListings])
+    fetchSavedListings()
+  }, [fetchSavedListings])
+
+  const getCategoryColor = (category: string) => {
+    switch (category) {
+      case 'skill': return 'bg-orange-100 text-orange-700'
+      case 'item': return 'bg-amber-100 text-amber-700'
+      case 'need': return 'bg-rose-100 text-rose-700'
+      default: return 'bg-gray-100 text-gray-700'
+    }
+  }
+
+  const getCategoryLabel = (category: string) => {
+    switch (category) {
+      case 'skill': return 'Skill'
+      case 'item': return 'Item'
+      case 'need': return 'Request'
+      default: return category
+    }
+  }
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString)
@@ -57,17 +75,20 @@ function RequestsPage() {
     return date.toLocaleDateString()
   }
 
-  const filteredListings = listings.filter(listing => 
-    !searchQuery || 
-    listing.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    listing.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    listing.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  )
-
-  const openEmail = (email: string, title: string) => {
-    const subject = encodeURIComponent(`I can help: ${title}`)
-    const body = encodeURIComponent(`Hi!\n\nI saw your request "${title}" on Clutch and I'd like to help.\n\n`)
+  const openEmail = (email: string, title: string, category: string) => {
+    const subject = category === 'need' 
+      ? encodeURIComponent(`I can help: ${title}`)
+      : encodeURIComponent(`About your Clutch listing: ${title}`)
+    const body = category === 'need'
+      ? encodeURIComponent(`Hi!\n\nI saw your request "${title}" on Clutch and I'd like to help.\n\n`)
+      : encodeURIComponent(`Hi!\n\nI saw your listing "${title}" on Clutch and I'm interested.\n\n`)
     window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+  }
+
+  const handleUnsave = async (id: string) => {
+    await toggleSave(id)
+    setListings(prev => prev.filter(l => l.id !== id))
+    await refresh()
   }
 
   return (
@@ -75,57 +96,43 @@ function RequestsPage() {
       {/* Header */}
       <header className="sticky top-0 z-10 bg-white border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <h1 className="text-2xl font-bold text-gray-900">Requests</h1>
-          <p className="text-sm text-gray-500 mt-0.5">Students who need help</p>
+          <h1 className="text-2xl font-bold text-gray-900">Saved</h1>
+          <p className="text-sm text-gray-500 mt-0.5">Listings you bookmarked</p>
         </div>
       </header>
 
-      {/* Search Bar */}
-      <div className="max-w-2xl mx-auto px-4 py-4">
-        <input
-          type="text"
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-          placeholder="Search requests..."
-          className="w-full px-4 py-3 rounded-2xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-        />
-      </div>
-
-      {/* Info Banner */}
-      <div className="max-w-2xl mx-auto px-4 pb-4">
-        <div className="p-3 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-200 rounded-2xl">
-          <p className="text-sm text-orange-800">
-            🙋 These students need help! Reach out if you can assist.
-          </p>
-        </div>
-      </div>
-
       {/* Listings */}
-      <div className="max-w-2xl mx-auto px-4 pb-24">
+      <div className="max-w-2xl mx-auto px-4 py-6 pb-24">
         {isLoading ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <span className="text-2xl">🙋</span>
+              <span className="text-2xl">🔖</span>
             </div>
-            <p className="text-gray-500">Loading requests...</p>
+            <p className="text-gray-500">Loading saved listings...</p>
           </div>
-        ) : filteredListings.length === 0 ? (
+        ) : listings.length === 0 ? (
           <div className="text-center py-16">
-            <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-2xl">📭</span>
+            <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
+              <span className="text-4xl">🔖</span>
             </div>
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">No requests yet</h3>
-            <p className="text-gray-500 text-sm">Be the first to ask for help!</p>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">No saved listings yet</h3>
+            <p className="text-gray-500 text-sm max-w-xs mx-auto">
+              Tap the bookmark icon on any listing to save it here for later
+            </p>
           </div>
         ) : (
           <div className="space-y-3">
-            {filteredListings.map((listing) => (
+            {listings.map((listing) => (
               <div
                 key={listing.id}
                 className="bg-white rounded-2xl border border-gray-100 p-4 shadow-sm hover:shadow-md transition-shadow"
               >
                 <div className="flex items-start gap-3">
-                  <div className="w-12 h-12 bg-gradient-to-br from-rose-400 to-orange-400 rounded-full flex items-center justify-center text-xl text-white flex-shrink-0 font-bold">
+                  <div className={`w-12 h-12 rounded-full flex items-center justify-center text-xl text-white flex-shrink-0 font-bold ${
+                    listing.category === 'need' 
+                      ? 'bg-gradient-to-br from-rose-400 to-orange-400'
+                      : 'bg-gradient-to-br from-orange-400 to-amber-400'
+                  }`}>
                     {listing.userName.slice(0, 2).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
@@ -134,7 +141,7 @@ function RequestsPage() {
                       <div className="flex items-center gap-2">
                         <span className="text-xs text-gray-400">{formatDate(listing.createdAt)}</span>
                         <button
-                          onClick={() => toggleSave(listing.id)}
+                          onClick={() => handleUnsave(listing.id)}
                           className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
                         >
                           <span className="text-lg">{isSaved(listing.id) ? '🔖' : '📑'}</span>
@@ -144,8 +151,8 @@ function RequestsPage() {
                     <h2 className="font-medium text-gray-900 mb-1">{listing.title}</h2>
                     <p className="text-sm text-gray-600 line-clamp-2 mb-3">{listing.description}</p>
                     <div className="flex items-center gap-2 flex-wrap mb-3">
-                      <span className="px-2.5 py-1 rounded-full text-xs font-medium bg-rose-100 text-rose-700">
-                        Request
+                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${getCategoryColor(listing.category)}`}>
+                        {getCategoryLabel(listing.category)}
                       </span>
                       {listing.tags.slice(0, 2).map((tag) => (
                         <span key={tag} className="px-2.5 py-1 bg-gray-100 text-gray-500 rounded-full text-xs">
@@ -153,15 +160,15 @@ function RequestsPage() {
                         </span>
                       ))}
                     </div>
-
+                    
                     {/* Contact Button */}
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <span className="text-sm text-gray-400">{listing.userEmail}</span>
                       <button
-                        onClick={() => openEmail(listing.userEmail, listing.title)}
+                        onClick={() => openEmail(listing.userEmail, listing.title, listing.category)}
                         className="py-2 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm shadow-orange-500/20"
                       >
-                        Offer Help
+                        {listing.category === 'need' ? 'Offer Help' : 'Email'}
                       </button>
                     </div>
                   </div>
@@ -177,10 +184,10 @@ function RequestsPage() {
   )
 }
 
-export default function Requests() {
+export default function Saved() {
   return (
     <ProtectedRoute>
-      <RequestsPage />
+      <SavedPage />
     </ProtectedRoute>
   )
 }
