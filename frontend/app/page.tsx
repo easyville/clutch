@@ -85,10 +85,22 @@ function OffersPage() {
       listing.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
     )
 
-  const openEmail = (email: string, title: string) => {
-    const subject = encodeURIComponent(`About your Clutch listing: ${title}`)
-    const body = encodeURIComponent(`Hi!\n\nI saw your listing "${title}" on Clutch and I'm interested.\n\n`)
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+  const openEmail = (listing: Listing) => {
+    const subject = encodeURIComponent(`Clutch: Interested in "${listing.title}"`)
+    const body = encodeURIComponent(
+`Hi ${listing.userName}!
+
+I saw your listing on Clutch and I'm interested:
+
+📌 "${listing.title}"
+${listing.description}
+
+I'd love to connect and discuss this further. Let me know when you're available!
+
+Best regards`)
+    // Open Outlook Web App in new tab
+    const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(listing.userEmail)}&subject=${subject}&body=${body}`
+    window.open(outlookUrl, '_blank')
   }
 
   return (
@@ -189,7 +201,7 @@ function OffersPage() {
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <span className="text-sm text-gray-400">{listing.userEmail}</span>
                       <button
-                        onClick={() => openEmail(listing.userEmail, listing.title)}
+                        onClick={() => openEmail(listing)}
                         className="py-2 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm shadow-orange-500/20"
                       >
                         Email

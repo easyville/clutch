@@ -19,7 +19,7 @@ export async function sendVerificationEmail(email: string, code: string) {
 
   try {
     const { data, error } = await resend.emails.send({
-      from: 'Clutch <noreply@resend.dev>',
+      from: 'Clutch <noreply@clutch-skillshare.app>',
       to: email,
       subject: 'Your Clutch verification code',
       html: `

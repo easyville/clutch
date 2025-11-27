@@ -8,6 +8,7 @@ export default function Login() {
   const [email, setEmail] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [agreedToTerms, setAgreedToTerms] = useState(false)
   const { login, user, isLoading, setPendingEmail } = useAuth()
   const router = useRouter()
 
@@ -102,6 +103,20 @@ export default function Login() {
                 />
               </div>
 
+              {/* Terms Checkbox */}
+              <div className="flex items-start gap-3">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  checked={agreedToTerms}
+                  onChange={(e) => setAgreedToTerms(e.target.checked)}
+                  className="mt-1 w-4 h-4 text-orange-500 bg-gray-50 border-gray-300 rounded focus:ring-orange-400 focus:ring-2 cursor-pointer"
+                />
+                <label htmlFor="terms" className="text-xs text-gray-600 leading-relaxed cursor-pointer">
+                  I understand that my <span className="font-medium text-gray-800">university email will be visible</span> to other Essex students on my listings, allowing them to contact me regarding my offers and requests.
+                </label>
+              </div>
+
               {error && (
                 <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
                   <p className="text-red-600 text-sm">{error}</p>
@@ -110,7 +125,7 @@ export default function Login() {
 
               <button
                 type="submit"
-                disabled={isSubmitting || !email}
+                disabled={isSubmitting || !email || !agreedToTerms}
                 className="w-full py-3.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transition-all shadow-lg shadow-orange-500/30"
               >
                 {isSubmitting ? (

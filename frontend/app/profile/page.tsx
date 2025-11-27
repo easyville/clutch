@@ -45,15 +45,11 @@ function ProfilePage() {
   }, [fetchMyListings])
 
   const handleLogout = async () => {
-    if (confirm('Are you sure you want to log out?')) {
-      await logout()
-      router.push('/login')
-    }
+    await logout()
+    router.push('/login')
   }
 
   const handleDeleteListing = async (id: string) => {
-    if (!confirm('Delete this listing?')) return
-
     try {
       const res = await fetch(`/api/listings/${id}`, { method: 'DELETE' })
       const data = await res.json()
