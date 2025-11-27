@@ -133,7 +133,7 @@ export const db = {
         const listings = await Promise.all(
           ids.map(id => kv.hgetall(`listing:${id}`))
         )
-        return listings.filter(Boolean) as Listing[]
+        return listings.filter(Boolean) as unknown as Listing[]
       } catch (error) {
         console.error('KV getAllListings error:', error)
         initMemory()
@@ -148,7 +148,7 @@ export const db = {
   async getListing(id: string): Promise<Listing | null> {
     if (isKVAvailable()) {
       try {
-        return await kv.hgetall(`listing:${id}`) as Listing | null
+        return await kv.hgetall(`listing:${id}`) as unknown as Listing | null
       } catch (error) {
         console.error('KV getListing error:', error)
         initMemory()
