@@ -80,7 +80,7 @@ export default function Verify() {
     if (pendingEmail) {
       const result = await sendCode(pendingEmail)
       if (result.success && result.devCode) {
-        alert(`🎓 Development Mode\n\nNew verification code: ${result.devCode}`)
+        alert(`🔧 Local Dev Mode\n\nNew verification code: ${result.devCode}`)
       }
     }
   }

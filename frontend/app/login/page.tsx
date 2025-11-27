@@ -27,9 +27,9 @@ export default function Login() {
     const result = await sendCode(email)
     
     if (result.success) {
-      // If dev mode, show the code in an alert
+      // Only show code alert in local development
       if (result.devCode) {
-        alert(`🎓 Development Mode\n\nVerification code: ${result.devCode}\n\n(In production, this would be sent to ${email})`)
+        alert(`🔧 Local Dev Mode\n\nVerification code: ${result.devCode}`)
       }
       router.push('/verify')
     } else {

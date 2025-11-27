@@ -29,11 +29,14 @@ export async function POST(request: NextRequest) {
     // Send email
     const result = await sendVerificationEmail(emailLower, code)
 
+    // Only return code in local development (not on Vercel)
+    const isLocalDev = process.env.NODE_ENV === 'development' && !process.env.VERCEL
+
     return NextResponse.json({
       success: true,
-      message: 'Verification code sent',
-      devMode: result.devMode,
-      ...(result.devMode ? { code } : {}),
+      message: 'Verification code sent to your email',
+      devMode: isLocalDev && result.devMode,
+      ...(isLocalDev && result.devMode ? { code } : {}),
     })
   } catch (error) {
     console.error('Send code error:', error)

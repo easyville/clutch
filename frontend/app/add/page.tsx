@@ -38,15 +38,13 @@ function AddListingPage() {
     setIsSubmitting(true)
 
     try {
-      const finalCategory = type === 'request' ? 'need' : category
-
       const res = await fetch('/api/listings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           title,
           description,
-          category: finalCategory,
+          category,
           type,
           tags,
         }),
@@ -135,46 +133,44 @@ function AddListingPage() {
             </div>
           </div>
 
-          {/* Category Selection - Only show for offers */}
-          {type === 'offer' && (
-            <div>
-              <label className="block text-sm font-semibold text-gray-900 mb-3">
-                What are you offering?
-              </label>
-              <div className="grid grid-cols-2 gap-3">
-                <button
-                  type="button"
-                  onClick={() => setCategory('skill')}
-                  className={`p-4 rounded-2xl border-2 transition-all ${
-                    category === 'skill'
-                      ? 'border-orange-500 bg-orange-50'
-                      : 'border-gray-200 bg-white hover:border-gray-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">🎓</div>
-                  <div className={`text-base font-semibold ${category === 'skill' ? 'text-orange-900' : 'text-gray-700'}`}>
-                    Skill
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">Help & services</div>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setCategory('item')}
-                  className={`p-4 rounded-2xl border-2 transition-all ${
-                    category === 'item'
-                      ? 'border-amber-500 bg-amber-50'
-                      : 'border-gray-200 bg-white hover:border-amber-300'
-                  }`}
-                >
-                  <div className="text-3xl mb-2">📦</div>
-                  <div className={`text-base font-semibold ${category === 'item' ? 'text-amber-900' : 'text-gray-700'}`}>
-                    Item
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">Things to share</div>
-                </button>
-              </div>
+          {/* Category Selection */}
+          <div>
+            <label className="block text-sm font-semibold text-gray-900 mb-3">
+              {type === 'offer' ? 'What are you offering?' : 'What do you need?'}
+            </label>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                type="button"
+                onClick={() => setCategory('skill')}
+                className={`p-4 rounded-2xl border-2 transition-all ${
+                  category === 'skill'
+                    ? type === 'offer' ? 'border-orange-500 bg-orange-50' : 'border-rose-500 bg-rose-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="text-3xl mb-2">🎓</div>
+                <div className={`text-base font-semibold ${category === 'skill' ? (type === 'offer' ? 'text-orange-900' : 'text-rose-900') : 'text-gray-700'}`}>
+                  Skill
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{type === 'offer' ? 'Help & services' : 'Need help with'}</div>
+              </button>
+              <button
+                type="button"
+                onClick={() => setCategory('item')}
+                className={`p-4 rounded-2xl border-2 transition-all ${
+                  category === 'item'
+                    ? type === 'offer' ? 'border-amber-500 bg-amber-50' : 'border-rose-500 bg-rose-50'
+                    : 'border-gray-200 bg-white hover:border-gray-300'
+                }`}
+              >
+                <div className="text-3xl mb-2">📦</div>
+                <div className={`text-base font-semibold ${category === 'item' ? (type === 'offer' ? 'text-amber-900' : 'text-rose-900') : 'text-gray-700'}`}>
+                  Item
+                </div>
+                <div className="text-xs text-gray-500 mt-1">{type === 'offer' ? 'Things to share' : 'Looking for'}</div>
+              </button>
             </div>
-          )}
+          </div>
 
           {/* Title */}
           <div>

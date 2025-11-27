@@ -136,18 +136,6 @@ function ProfilePage() {
         </div>
       </div>
 
-      {/* Verified Notice */}
-      <div className="max-w-2xl mx-auto px-4 mb-4">
-        <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl">
-          <div className="flex items-center gap-3">
-            <span className="text-xl">✓</span>
-            <div>
-              <h3 className="font-semibold text-green-900 text-sm">Verified</h3>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* My Listings */}
       <div className="max-w-2xl mx-auto px-4 pb-24">
         <div className="flex items-center justify-between mb-3">
