@@ -139,13 +139,10 @@ function ProfilePage() {
       {/* Verified Notice */}
       <div className="max-w-2xl mx-auto px-4 mb-4">
         <div className="p-4 bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-2xl">
-          <div className="flex items-start gap-3">
-            <span className="text-xl">🔒</span>
+          <div className="flex items-center gap-3">
+            <span className="text-xl">✓</span>
             <div>
-              <h3 className="font-semibold text-green-900 text-sm mb-1">Verified Essex Student</h3>
-              <p className="text-green-700 text-xs">
-                Your email has been verified. Other students can trust that you're a real Essex University student.
-              </p>
+              <h3 className="font-semibold text-green-900 text-sm">Verified</h3>
             </div>
           </div>
         </div>

@@ -36,13 +36,6 @@ export default function Verify() {
     if (value && index < 5) {
       inputRefs.current[index + 1]?.focus()
     }
-
-    if (value && index === 5) {
-      const fullCode = newCode.join('')
-      if (fullCode.length === 6) {
-        handleSubmit(fullCode)
-      }
-    }
   }
 
   const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
@@ -57,9 +50,6 @@ export default function Verify() {
     if (/^\d+$/.test(pastedData)) {
       const newCode = pastedData.split('').concat(Array(6 - pastedData.length).fill(''))
       setCode(newCode)
-      if (pastedData.length === 6) {
-        handleSubmit(pastedData)
-      }
     }
   }
 
