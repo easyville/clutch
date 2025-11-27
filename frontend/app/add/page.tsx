@@ -109,7 +109,7 @@ function AddListingPage() {
                     : 'border-gray-200 bg-white hover:border-orange-300'
                 }`}
               >
-                <div className="text-3xl mb-2">💼</div>
+                <div className="text-3xl mb-2">🎁</div>
                 <div className={`text-base font-semibold ${type === 'offer' ? 'text-orange-900' : 'text-gray-700'}`}>
                   Offer
                 </div>
@@ -124,7 +124,7 @@ function AddListingPage() {
                     : 'border-gray-200 bg-white hover:border-rose-300'
                 }`}
               >
-                <div className="text-3xl mb-2">🙋</div>
+                <div className="text-3xl mb-2">🔍</div>
                 <div className={`text-base font-semibold ${type === 'request' ? 'text-rose-900' : 'text-gray-700'}`}>
                   Request
                 </div>
