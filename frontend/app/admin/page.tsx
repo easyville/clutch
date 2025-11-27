@@ -362,28 +362,81 @@ export default function AdminPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Type</label>
-                  <select
-                    value={newListing.type}
-                    onChange={(e) => setNewListing({ ...newListing, type: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              {/* Type Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  What would you like to do?
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNewListing({ ...newListing, type: 'offer' })}
+                    className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${
+                      newListing.type === 'offer'
+                        ? 'border-orange-500 bg-orange-50'
+                        : 'border-gray-200 bg-white hover:border-orange-300'
+                    }`}
                   >
-                    <option value="offer">Offer</option>
-                    <option value="request">Request</option>
-                  </select>
+                    <div className="text-3xl mb-2">🎁</div>
+                    <div className={`text-base font-semibold ${newListing.type === 'offer' ? 'text-orange-900' : 'text-gray-700'}`}>
+                      Offer
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">Can help or share</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewListing({ ...newListing, type: 'request' })}
+                    className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${
+                      newListing.type === 'request'
+                        ? 'border-rose-500 bg-rose-50'
+                        : 'border-gray-200 bg-white hover:border-rose-300'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">🔍</div>
+                    <div className={`text-base font-semibold ${newListing.type === 'request' ? 'text-rose-900' : 'text-gray-700'}`}>
+                      Request
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">Needs help</div>
+                  </button>
                 </div>
-                <div>
-                  <label className="block text-sm font-semibold text-gray-900 mb-2">Category</label>
-                  <select
-                    value={newListing.category}
-                    onChange={(e) => setNewListing({ ...newListing, category: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl border border-gray-200 bg-white focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+              </div>
+
+              {/* Category Selection */}
+              <div>
+                <label className="block text-sm font-semibold text-gray-900 mb-3">
+                  {newListing.type === 'offer' ? 'What are they offering?' : 'What do they need?'}
+                </label>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setNewListing({ ...newListing, category: 'skill' })}
+                    className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${
+                      newListing.category === 'skill'
+                        ? newListing.type === 'offer' ? 'border-orange-500 bg-orange-50' : 'border-rose-500 bg-rose-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
                   >
-                    <option value="skill">Skill</option>
-                    <option value="item">Item</option>
-                  </select>
+                    <div className="text-3xl mb-2">🎓</div>
+                    <div className={`text-base font-semibold ${newListing.category === 'skill' ? (newListing.type === 'offer' ? 'text-orange-900' : 'text-rose-900') : 'text-gray-700'}`}>
+                      Skill
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">{newListing.type === 'offer' ? 'Help & services' : 'Need help with'}</div>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setNewListing({ ...newListing, category: 'item' })}
+                    className={`p-4 rounded-2xl border-2 transition-all active:scale-95 ${
+                      newListing.category === 'item'
+                        ? newListing.type === 'offer' ? 'border-amber-500 bg-amber-50' : 'border-rose-500 bg-rose-50'
+                        : 'border-gray-200 bg-white hover:border-gray-300'
+                    }`}
+                  >
+                    <div className="text-3xl mb-2">📦</div>
+                    <div className={`text-base font-semibold ${newListing.category === 'item' ? (newListing.type === 'offer' ? 'text-amber-900' : 'text-rose-900') : 'text-gray-700'}`}>
+                      Item
+                    </div>
+                    <div className="text-xs text-gray-500 mt-1">{newListing.type === 'offer' ? 'Things to share' : 'Looking for'}</div>
+                  </button>
                 </div>
               </div>
 
