@@ -22,6 +22,7 @@ interface Listing {
 function SavedPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const { toggleSave, isSaved, refresh } = useSaved()
 
   const fetchSavedListings = useCallback(async () => {
@@ -75,14 +76,14 @@ function SavedPage() {
     return date.toLocaleDateString()
   }
 
-  const openEmail = (email: string, title: string, category: string) => {
-    const subject = category === 'need' 
-      ? encodeURIComponent(`I can help: ${title}`)
-      : encodeURIComponent(`About your Clutch listing: ${title}`)
-    const body = category === 'need'
-      ? encodeURIComponent(`Hi!\n\nI saw your request "${title}" on Clutch and I'd like to help.\n\n`)
-      : encodeURIComponent(`Hi!\n\nI saw your listing "${title}" on Clutch and I'm interested.\n\n`)
-    window.location.href = `mailto:${email}?subject=${subject}&body=${body}`
+  const copyEmail = async (listing: Listing) => {
+    try {
+      await navigator.clipboard.writeText(listing.userEmail)
+      setCopiedId(listing.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
   }
 
   const handleUnsave = async (id: string) => {
@@ -106,14 +107,14 @@ function SavedPage() {
         {isLoading ? (
           <div className="text-center py-16">
             <div className="w-16 h-16 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4 animate-pulse">
-              <span className="text-2xl">🔖</span>
+              <span className="text-2xl">❤️</span>
             </div>
             <p className="text-gray-500">Loading saved listings...</p>
           </div>
         ) : listings.length === 0 ? (
           <div className="text-center py-16">
             <div className="w-20 h-20 bg-gradient-to-br from-orange-100 to-amber-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <span className="text-4xl">🔖</span>
+              <span className="text-4xl">🤍</span>
             </div>
             <h3 className="text-lg font-semibold text-gray-900 mb-2">No saved listings yet</h3>
             <p className="text-gray-500 text-sm max-w-xs mx-auto">
@@ -142,9 +143,11 @@ function SavedPage() {
                         <span className="text-xs text-gray-400">{formatDate(listing.createdAt)}</span>
                         <button
                           onClick={() => handleUnsave(listing.id)}
-                          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-gray-100 active:scale-90 rounded-lg transition-all"
                         >
-                          <span className="text-lg">{isSaved(listing.id) ? '🔖' : '📑'}</span>
+                          <span className={`text-xl transition-transform ${isSaved(listing.id) ? 'scale-110' : ''}`}>
+                            {isSaved(listing.id) ? '❤️' : '🤍'}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -165,10 +168,14 @@ function SavedPage() {
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <span className="text-sm text-gray-400">{listing.userEmail}</span>
                       <button
-                        onClick={() => openEmail(listing.userEmail, listing.title, listing.category)}
-                        className="py-2 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm shadow-orange-500/20"
+                        onClick={() => copyEmail(listing)}
+                        className={`py-2 px-4 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95 ${
+                          copiedId === listing.id
+                            ? 'bg-green-500 text-white shadow-green-500/20'
+                            : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 active:shadow-md shadow-orange-500/20'
+                        }`}
                       >
-                        {listing.category === 'need' ? 'Offer Help' : 'Email'}
+                        {copiedId === listing.id ? '✓ Copied!' : 'Copy Email'}
                       </button>
                     </div>
                   </div>

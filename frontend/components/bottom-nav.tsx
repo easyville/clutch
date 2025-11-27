@@ -7,9 +7,9 @@ export function BottomNav() {
   const pathname = usePathname()
 
   const navItems = [
-    { href: '/', icon: '💼', label: 'Offers' },
-    { href: '/requests', icon: '🙋', label: 'Requests' },
-    { href: '/saved', icon: '🔖', label: 'Saved' },
+    { href: '/', icon: '🎁', label: 'Offers' },
+    { href: '/requests', icon: '🔍', label: 'Requests' },
+    { href: '/saved', icon: '❤️', label: 'Saved' },
     { href: '/add', icon: '➕', label: 'Add' },
     { href: '/profile', icon: '👤', label: 'Profile' },
   ]
@@ -24,11 +24,11 @@ export function BottomNav() {
               <Link
                 key={item.href}
                 href={item.href}
-                className={`flex flex-col items-center py-2 transition-colors ${
+                className={`flex flex-col items-center py-2 rounded-xl transition-all active:scale-90 active:bg-gray-50 ${
                   isActive ? 'text-orange-500' : 'text-gray-400 hover:text-gray-600'
                 }`}
               >
-                <span className="text-2xl mb-1">{item.icon}</span>
+                <span className={`text-2xl mb-1 transition-transform ${isActive ? 'scale-110' : ''}`}>{item.icon}</span>
                 <span className="text-xs font-medium">{item.label}</span>
               </Link>
             )

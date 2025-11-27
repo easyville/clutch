@@ -22,6 +22,7 @@ function RequestsPage() {
   const [listings, setListings] = useState<Listing[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [searchQuery, setSearchQuery] = useState('')
+  const [copiedId, setCopiedId] = useState<string | null>(null)
   const { toggleSave, isSaved } = useSaved()
 
   const fetchListings = useCallback(async () => {
@@ -64,22 +65,14 @@ function RequestsPage() {
     listing.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
   )
 
-  const openEmail = (listing: Listing) => {
-    const subject = encodeURIComponent(`Clutch: I can help with "${listing.title}"`)
-    const body = encodeURIComponent(
-`Hi ${listing.userName}!
-
-I saw your request on Clutch and I'd love to help:
-
-📌 "${listing.title}"
-${listing.description}
-
-I think I can assist you with this. Let me know when you're free to discuss!
-
-Best regards`)
-    // Open Outlook Web App in new tab
-    const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(listing.userEmail)}&subject=${subject}&body=${body}`
-    window.open(outlookUrl, '_blank')
+  const copyEmail = async (listing: Listing) => {
+    try {
+      await navigator.clipboard.writeText(listing.userEmail)
+      setCopiedId(listing.id)
+      setTimeout(() => setCopiedId(null), 2000)
+    } catch (err) {
+      console.error('Failed to copy:', err)
+    }
   }
 
   return (
@@ -147,9 +140,11 @@ Best regards`)
                         <span className="text-xs text-gray-400">{formatDate(listing.createdAt)}</span>
                         <button
                           onClick={() => toggleSave(listing.id)}
-                          className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+                          className="p-1.5 hover:bg-gray-100 active:scale-90 rounded-lg transition-all"
                         >
-                          <span className="text-lg">{isSaved(listing.id) ? '★' : '☆'}</span>
+                          <span className={`text-xl transition-transform ${isSaved(listing.id) ? 'scale-110' : ''}`}>
+                            {isSaved(listing.id) ? '❤️' : '🤍'}
+                          </span>
                         </button>
                       </div>
                     </div>
@@ -170,10 +165,14 @@ Best regards`)
                     <div className="flex items-center justify-between pt-3 border-t border-gray-100">
                       <span className="text-sm text-gray-400">{listing.userEmail}</span>
                       <button
-                        onClick={() => openEmail(listing)}
-                        className="py-2 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white rounded-xl text-sm font-medium hover:from-orange-600 hover:to-amber-600 transition-all shadow-sm shadow-orange-500/20"
+                        onClick={() => copyEmail(listing)}
+                        className={`py-2 px-4 rounded-xl text-sm font-medium transition-all shadow-sm active:scale-95 ${
+                          copiedId === listing.id
+                            ? 'bg-green-500 text-white shadow-green-500/20'
+                            : 'bg-gradient-to-r from-orange-500 to-amber-500 text-white hover:from-orange-600 hover:to-amber-600 active:shadow-md shadow-orange-500/20'
+                        }`}
                       >
-                        Email
+                        {copiedId === listing.id ? '✓ Copied!' : 'Copy Email'}
                       </button>
                     </div>
                   </div>
