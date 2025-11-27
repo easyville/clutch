@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { cookies } from 'next/headers'
 
 function extractNameFromEmail(email: string): string {
@@ -20,53 +19,67 @@ export async function POST(request: NextRequest) {
     }
 
     const emailLower = email.toLowerCase().trim()
-
-    // Find verification code
-    const verification = await prisma.verificationCode.findUnique({
-      where: { email: emailLower },
-    })
-
-    if (!verification) {
+    const cookieStore = await cookies()
+    
+    // Get pending verification from cookie
+    const pendingCookie = cookieStore.get('pendingVerification')
+    
+    if (!pendingCookie) {
       return NextResponse.json(
         { success: false, error: 'No verification code found. Please request a new one.' },
         { status: 400 }
       )
     }
 
+    let pending
+    try {
+      pending = JSON.parse(pendingCookie.value)
+    } catch {
+      return NextResponse.json(
+        { success: false, error: 'Invalid verification data. Please request a new code.' },
+        { status: 400 }
+      )
+    }
+
     // Check if code expired
-    if (new Date() > verification.expiresAt) {
-      await prisma.verificationCode.delete({ where: { email: emailLower } })
+    if (Date.now() > pending.expiresAt) {
+      cookieStore.delete('pendingVerification')
       return NextResponse.json(
         { success: false, error: 'Verification code expired. Please request a new one.' },
         { status: 400 }
       )
     }
 
+    // Check email matches
+    if (pending.email !== emailLower) {
+      return NextResponse.json(
+        { success: false, error: 'Email mismatch. Please request a new code.' },
+        { status: 400 }
+      )
+    }
+
     // Check if code matches
-    if (verification.code !== code) {
+    if (pending.code !== code) {
       return NextResponse.json(
         { success: false, error: 'Invalid verification code' },
         { status: 400 }
       )
     }
 
-    // Create or update user
-    const user = await prisma.user.upsert({
-      where: { email: emailLower },
-      update: { verified: true },
-      create: {
-        email: emailLower,
-        name: extractNameFromEmail(emailLower),
-        verified: true,
-      },
-    })
+    // Create user session
+    const user = {
+      id: Buffer.from(emailLower).toString('base64'),
+      email: emailLower,
+      name: extractNameFromEmail(emailLower),
+      verified: true,
+      createdAt: new Date().toISOString(),
+    }
 
-    // Delete verification code
-    await prisma.verificationCode.delete({ where: { email: emailLower } })
-
-    // Set session cookie
-    const cookieStore = await cookies()
-    cookieStore.set('userId', user.id, {
+    // Clear pending verification
+    cookieStore.delete('pendingVerification')
+    
+    // Set user session cookie
+    cookieStore.set('userSession', JSON.stringify(user), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',
@@ -75,20 +88,13 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        verified: user.verified,
-        createdAt: user.createdAt.toISOString(),
-      },
+      user,
     })
   } catch (error) {
     console.error('Verify error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Verification failed' },
       { status: 500 }
     )
   }
 }
-

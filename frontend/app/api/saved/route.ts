@@ -1,71 +1,52 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { cookies } from 'next/headers'
 
-// GET all saved listings for current user
+// Saved listings stored in cookies for simplicity
+// In production, use a database
+
 export async function GET() {
   try {
     const cookieStore = await cookies()
-    const userId = cookieStore.get('userId')?.value
+    const sessionCookie = cookieStore.get('userSession')
 
-    if (!userId) {
+    if (!sessionCookie) {
       return NextResponse.json(
         { success: false, error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    const savedListings = await prisma.savedListing.findMany({
-      where: { userId },
-      include: {
-        listing: {
-          include: {
-            user: {
-              select: {
-                id: true,
-                name: true,
-                email: true,
-              },
-            },
-          },
-        },
-      },
-      orderBy: { createdAt: 'desc' },
-    })
+    const savedCookie = cookieStore.get('savedListings')
+    const savedIds: string[] = savedCookie ? JSON.parse(savedCookie.value) : []
+
+    // Fetch the actual listings from the listings API
+    const listingsRes = await fetch(new URL('/api/listings', process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000'))
+    const listingsData = await listingsRes.json()
+
+    const savedListings = listingsData.success 
+      ? listingsData.listings.filter((l: { id: string }) => savedIds.includes(l.id))
+      : []
 
     return NextResponse.json({
       success: true,
-      savedListings: savedListings.map(saved => ({
-        id: saved.listing.id,
-        title: saved.listing.title,
-        description: saved.listing.description,
-        category: saved.listing.category,
-        type: saved.listing.type,
-        tags: JSON.parse(saved.listing.tags),
-        createdAt: saved.listing.createdAt.toISOString(),
-        userId: saved.listing.userId,
-        userName: saved.listing.user.name,
-        userEmail: saved.listing.user.email,
-        savedAt: saved.createdAt.toISOString(),
-      })),
-      savedIds: savedListings.map(saved => saved.listingId),
+      savedListings,
+      savedIds,
     })
   } catch (error) {
     console.error('Get saved listings error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to fetch saved listings' },
       { status: 500 }
     )
   }
 }
 
-// POST toggle save listing
 export async function POST(request: NextRequest) {
   try {
     const cookieStore = await cookies()
-    const userId = cookieStore.get('userId')?.value
+    const sessionCookie = cookieStore.get('userSession')
 
-    if (!userId) {
+    if (!sessionCookie) {
       return NextResponse.json(
         { success: false, error: 'Not authenticated' },
         { status: 401 }
@@ -81,58 +62,34 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Check if listing exists
-    const listing = await prisma.listing.findUnique({
-      where: { id: listingId },
-    })
+    const savedCookie = cookieStore.get('savedListings')
+    let savedIds: string[] = savedCookie ? JSON.parse(savedCookie.value) : []
 
-    if (!listing) {
-      return NextResponse.json(
-        { success: false, error: 'Listing not found' },
-        { status: 404 }
-      )
-    }
+    const isSaved = savedIds.includes(listingId)
 
-    // Check if already saved
-    const existing = await prisma.savedListing.findUnique({
-      where: {
-        userId_listingId: {
-          userId,
-          listingId,
-        },
-      },
-    })
-
-    if (existing) {
-      // Unsave
-      await prisma.savedListing.delete({
-        where: { id: existing.id },
-      })
-      return NextResponse.json({
-        success: true,
-        saved: false,
-        message: 'Listing removed from saved',
-      })
+    if (isSaved) {
+      savedIds = savedIds.filter(id => id !== listingId)
     } else {
-      // Save
-      await prisma.savedListing.create({
-        data: {
-          userId,
-          listingId,
-        },
-      })
-      return NextResponse.json({
-        success: true,
-        saved: true,
-        message: 'Listing saved',
-      })
+      savedIds.push(listingId)
     }
+
+    cookieStore.set('savedListings', JSON.stringify(savedIds), {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'lax',
+      maxAge: 60 * 60 * 24 * 365, // 1 year
+    })
+
+    return NextResponse.json({
+      success: true,
+      saved: !isSaved,
+      message: isSaved ? 'Listing removed from saved' : 'Listing saved',
+    })
   } catch (error) {
     console.error('Toggle save error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Failed to save listing' },
       { status: 500 }
     )
   }
 }
-

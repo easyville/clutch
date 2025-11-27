@@ -1,56 +1,62 @@
 import { Resend } from 'resend'
 
-// Only create Resend instance if API key is available
-const resendApiKey = process.env.RESEND_API_KEY
+const resend = process.env.RESEND_API_KEY 
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null
 
 export async function sendVerificationEmail(email: string, code: string) {
-  // Check if API key is configured - if not, use dev mode
-  if (!resendApiKey || resendApiKey === 'your_resend_api_key_here' || resendApiKey.trim() === '') {
-    console.log(`📧 [DEV MODE] Verification code for ${email}: ${code}`)
-    return { success: true, devMode: true, code }
+  // Development mode - no API key
+  if (!resend) {
+    console.log('========================================')
+    console.log(`DEV MODE - Verification code for ${email}: ${code}`)
+    console.log('========================================')
+    return { 
+      devMode: true, 
+      code,
+      message: 'Running in dev mode - code logged to console'
+    }
   }
 
   try {
-    const resend = new Resend(resendApiKey)
-    
     const { data, error } = await resend.emails.send({
-      from: 'Clutch <onboarding@resend.dev>',
+      from: 'Clutch <noreply@resend.dev>',
       to: email,
       subject: 'Your Clutch verification code',
       html: `
-        <div style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width: 500px; margin: 0 auto; padding: 40px 20px;">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #f97316; font-size: 32px; margin: 0;">CLUTCH</h1>
-            <p style="color: #9ca3af; margin: 5px 0 0 0;">Skill Swap App</p>
+        <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
+          <h1 style="color: #f97316; font-size: 28px; margin-bottom: 24px;">Clutch</h1>
+          <p style="font-size: 16px; color: #374151; margin-bottom: 24px;">
+            Your verification code is:
+          </p>
+          <div style="background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%); color: white; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
+            ${code}
           </div>
-          
-          <div style="background: linear-gradient(135deg, #f97316, #f59e0b); padding: 30px; border-radius: 16px; text-align: center; margin-bottom: 30px;">
-            <p style="color: white; margin: 0 0 10px 0; font-size: 14px;">Your verification code is:</p>
-            <div style="background: white; padding: 15px 30px; border-radius: 12px; display: inline-block;">
-              <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; color: #1f2937;">${code}</span>
-            </div>
-          </div>
-          
-          <p style="color: #6b7280; font-size: 14px; text-align: center; margin: 0;">
-            This code expires in 10 minutes.<br/>
-            If you didn't request this, you can safely ignore this email.
+          <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">
+            This code will expire in 10 minutes.
+          </p>
+          <p style="font-size: 14px; color: #6b7280;">
+            If you didn't request this code, you can safely ignore this email.
           </p>
         </div>
       `,
     })
 
     if (error) {
-      console.error('Email send error:', error)
-      // Fall back to dev mode if email fails
-      console.log(`📧 [FALLBACK] Verification code for ${email}: ${code}`)
-      return { success: true, devMode: true, code }
+      console.error('Resend error:', error)
+      throw new Error(error.message)
     }
 
-    return { success: true, messageId: data?.id }
+    return { success: true, data }
   } catch (error) {
-    console.error('Email error:', error)
-    // Fall back to dev mode on any error
-    console.log(`📧 [FALLBACK] Verification code for ${email}: ${code}`)
-    return { success: true, devMode: true, code }
+    console.error('Email send error:', error)
+    // Fallback to dev mode on error
+    console.log('========================================')
+    console.log(`FALLBACK - Verification code for ${email}: ${code}`)
+    console.log('========================================')
+    return { 
+      devMode: true, 
+      code,
+      message: 'Email failed, code logged to console'
+    }
   }
 }

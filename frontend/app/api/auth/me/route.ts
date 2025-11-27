@@ -1,41 +1,32 @@
 import { NextResponse } from 'next/server'
-import { prisma } from '@/lib/db'
 import { cookies } from 'next/headers'
 
 export async function GET() {
   try {
     const cookieStore = await cookies()
-    const userId = cookieStore.get('userId')?.value
+    const sessionCookie = cookieStore.get('userSession')
 
-    if (!userId) {
+    if (!sessionCookie) {
       return NextResponse.json(
         { success: false, error: 'Not authenticated' },
         { status: 401 }
       )
     }
 
-    const user = await prisma.user.findUnique({
-      where: { id: userId },
-    })
-
-    if (!user) {
-      // Clear invalid cookie
-      cookieStore.delete('userId')
+    let user
+    try {
+      user = JSON.parse(sessionCookie.value)
+    } catch {
+      cookieStore.delete('userSession')
       return NextResponse.json(
-        { success: false, error: 'User not found' },
+        { success: false, error: 'Invalid session' },
         { status: 401 }
       )
     }
 
     return NextResponse.json({
       success: true,
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        verified: user.verified,
-        createdAt: user.createdAt.toISOString(),
-      },
+      user,
     })
   } catch (error) {
     console.error('Me error:', error)
@@ -49,15 +40,15 @@ export async function GET() {
 export async function DELETE() {
   try {
     const cookieStore = await cookies()
-    cookieStore.delete('userId')
+    cookieStore.delete('userSession')
+    cookieStore.delete('pendingVerification')
 
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Logout error:', error)
     return NextResponse.json(
-      { success: false, error: 'Internal server error' },
+      { success: false, error: 'Logout failed' },
       { status: 500 }
     )
   }
 }
-
