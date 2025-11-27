@@ -64,15 +64,6 @@ export default function Login() {
       <div className="flex-1 flex flex-col items-center justify-center px-6 py-12 relative z-10">
         {/* Logo & Title */}
         <div className="text-center mb-10">
-          {/* Handshake Icon */}
-          <div className="mb-6">
-            <svg width="120" height="80" viewBox="0 0 120 80" fill="none" className="mx-auto">
-              <path d="M20 50 L45 25 L60 40 L100 10" stroke="white" strokeWidth="8" strokeLinecap="round" strokeLinejoin="round" fill="none"/>
-              <path d="M35 55 C35 55 45 45 55 50 C65 55 70 50 70 50" stroke="white" strokeWidth="6" strokeLinecap="round" fill="none"/>
-              <circle cx="30" cy="55" r="8" fill="white"/>
-              <circle cx="75" cy="48" r="6" fill="white"/>
-            </svg>
-          </div>
           <h1 className="text-5xl font-bold text-white mb-2 tracking-tight">CLUTCH</h1>
           <div className="inline-block px-6 py-2 bg-white/20 backdrop-blur-sm rounded-full">
             <p className="text-white font-medium tracking-wide">SKILL SWAP APP</p>
