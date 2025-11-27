@@ -60,8 +60,8 @@ export default function AdminPage() {
   }
 
   const handleUsernameChange = (username: string) => {
-    // Only allow letters and digits
-    const cleanUsername = username.replace(/[^a-zA-Z0-9]/g, '')
+    // Only allow letters, digits, and dots (valid email characters)
+    const cleanUsername = username.replace(/[^a-zA-Z0-9.]/g, '')
     setNewListing(prev => ({
       ...prev,
       userEmail: cleanUsername ? `${cleanUsername}@essex.ac.uk` : '',
