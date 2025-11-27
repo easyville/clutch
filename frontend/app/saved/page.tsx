@@ -143,7 +143,9 @@ function SavedPage() {
                         <span className="text-xs text-gray-400">{formatDate(listing.createdAt)}</span>
                         <button
                           onClick={() => handleUnsave(listing.id)}
-                          className="p-1.5 hover:bg-gray-100 hover:scale-110 active:scale-90 rounded-lg transition-all"
+                          className={`p-1.5 hover:scale-110 active:scale-90 rounded-lg transition-all ${
+                            isSaved(listing.id) ? 'hover:bg-gray-100' : 'bg-gray-100 hover:bg-gray-200'
+                          }`}
                         >
                           <span className={`text-xl transition-transform ${isSaved(listing.id) ? 'scale-110' : ''}`}>
                             {isSaved(listing.id) ? '❤️' : '🤍'}
