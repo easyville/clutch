@@ -46,14 +46,19 @@ export async function verifyCode(email: string, code: string): Promise<boolean> 
 
 // Send verification email
 export async function sendVerificationEmail(email: string, code: string): Promise<{ success: boolean; devMode?: boolean }> {
-  const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+  const apiKey = process.env.RESEND_API_KEY
   
-  if (!resend) {
+  console.log('RESEND_API_KEY present:', !!apiKey)
+  console.log('RESEND_API_KEY starts with:', apiKey?.substring(0, 5) || 'NOT SET')
+  
+  if (!apiKey) {
     console.log('========================================')
-    console.log(`DEV MODE - Verification code for ${email}: ${code}`)
+    console.log(`NO API KEY - Verification code for ${email}: ${code}`)
     console.log('========================================')
     return { success: true, devMode: true }
   }
+  
+  const resend = new Resend(apiKey)
 
   try {
     const { error } = await resend.emails.send({
