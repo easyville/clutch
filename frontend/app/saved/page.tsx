@@ -110,8 +110,10 @@ function SavedPage() {
     )
     
     if (isMobile) {
-      // Mobile: Use mailto: which will open Outlook app if installed
-      window.location.href = `mailto:${listing.userEmail}?subject=${subject}&body=${body}`
+      // Mobile: Use Outlook app deep link (iOS and Android)
+      // This will open Outlook app if installed, otherwise user can choose their email app
+      const outlookAppUrl = `ms-outlook://compose?to=${encodeURIComponent(listing.userEmail)}&subject=${subject}&body=${body}`
+      window.location.href = outlookAppUrl
     } else {
       // Desktop: Open Outlook web compose
       const outlookUrl = `https://outlook.office.com/mail/deeplink/compose?to=${encodeURIComponent(listing.userEmail)}&subject=${subject}&body=${body}`
