@@ -64,23 +64,25 @@ export async function sendVerificationEmail(email: string, code: string): Promis
     const { error } = await resend.emails.send({
       from: 'Clutch <noreply@clutch-skillshare.app>',
       to: email,
-      subject: 'Your Clutch verification code',
+      subject: `Clutch code: ${code}`,
       html: `
-        <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 480px; margin: 0 auto; padding: 32px;">
-          <h1 style="color: #f97316; font-size: 28px; margin-bottom: 24px;">Clutch</h1>
-          <p style="font-size: 16px; color: #374151; margin-bottom: 24px;">
-            Your verification code is:
-          </p>
-          <div style="background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%); color: white; font-size: 32px; font-weight: bold; letter-spacing: 8px; padding: 24px; border-radius: 12px; text-align: center; margin-bottom: 24px;">
-            ${code}
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta name="color-scheme" content="light">
+          <meta name="supported-color-schemes" content="light">
+        </head>
+        <body style="margin: 0; padding: 0; background-color: #ffffff !important;">
+          <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 320px; margin: 0 auto; padding: 24px; background-color: #ffffff !important; color: #000000 !important;">
+            <div style="background-color: #f97316 !important; background: linear-gradient(135deg, #f97316 0%, #fbbf24 100%) !important; color: #ffffff !important; font-size: 36px; font-weight: bold; letter-spacing: 12px; padding: 20px; border-radius: 12px; text-align: center; margin-bottom: 16px; border: 2px solid #f97316 !important;">
+              ${code}
+            </div>
+            <p style="font-size: 13px; color: #6b7280 !important; text-align: center; margin: 0;">
+              Expires in 10 minutes
+            </p>
           </div>
-          <p style="font-size: 14px; color: #6b7280; margin-bottom: 8px;">
-            This code will expire in 10 minutes.
-          </p>
-          <p style="font-size: 14px; color: #6b7280;">
-            If you didn't request this code, you can safely ignore this email.
-          </p>
-        </div>
+        </body>
+        </html>
       `,
     })
 
