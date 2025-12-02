@@ -5,12 +5,13 @@ import { useRouter } from 'next/navigation'
 import { useAuth } from '@/lib/auth-context'
 
 export default function Verify() {
-  const [code, setCode] = useState(['', '', '', '', '', ''])
+  const [code, setCode] = useState('')
   const [error, setError] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [resendCooldown, setResendCooldown] = useState(0)
   const { verifyCode, pendingEmail, sendCode, user, isLoading } = useAuth()
   const router = useRouter()
-  const inputRefs = useRef<(HTMLInputElement | null)[]>([])
+  const codeInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     // Redirect if already logged in
@@ -25,24 +26,24 @@ export default function Verify() {
     }
   }, [pendingEmail, user, isLoading, router])
 
-  const handleChange = (index: number, value: string) => {
-    if (value && !/^\d$/.test(value)) return
-
-    const newCode = [...code]
-    newCode[index] = value
-    setCode(newCode)
-    setError('')
-
-    if (value && index < 5) {
-      inputRefs.current[index + 1]?.focus()
+  // Handle cooldown timer
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => {
+        setResendCooldown(resendCooldown - 1)
+      }, 1000)
+      return () => clearTimeout(timer)
     }
+  }, [resendCooldown])
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value.replace(/\D/g, '').slice(0, 6)
+    setCode(value)
+    setError('')
   }
 
-  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
-    if (e.key === 'Backspace' && !code[index] && index > 0) {
-      inputRefs.current[index - 1]?.focus()
-    }
-    if (e.key === 'Enter' && code.join('').length === 6) {
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && code.length === 6) {
       e.preventDefault()
       handleSubmit()
     }
@@ -50,38 +51,38 @@ export default function Verify() {
 
   const handlePaste = (e: React.ClipboardEvent) => {
     e.preventDefault()
-    const pastedData = e.clipboardData.getData('text').slice(0, 6)
-    if (/^\d+$/.test(pastedData)) {
-      const newCode = pastedData.split('').concat(Array(6 - pastedData.length).fill(''))
-      setCode(newCode)
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6)
+    if (pastedData) {
+      setCode(pastedData)
+      setError('')
     }
   }
 
-  const handleSubmit = async (codeString?: string) => {
+  const handleSubmit = async () => {
     if (!pendingEmail) return
     
-    const fullCode = codeString || code.join('')
-    if (fullCode.length !== 6) {
+    if (code.length !== 6) {
       setError('Please enter the complete 6-digit code')
       return
     }
 
     setIsSubmitting(true)
-    const result = await verifyCode(pendingEmail, fullCode)
+    const result = await verifyCode(pendingEmail, code)
     
     if (result.success) {
       router.push('/')
     } else {
       setError(result.error || 'Verification failed')
-      setCode(['', '', '', '', '', ''])
-      inputRefs.current[0]?.focus()
+      setCode('')
+      codeInputRef.current?.focus()
     }
     
     setIsSubmitting(false)
   }
 
   const handleResend = async () => {
-    if (pendingEmail) {
+    if (pendingEmail && resendCooldown === 0) {
+      setResendCooldown(60)
       const result = await sendCode(pendingEmail)
       if (result.success && result.devCode) {
         alert(`🔧 Local Dev Mode\n\nNew verification code: ${result.devCode}`)
@@ -135,21 +136,19 @@ export default function Verify() {
             </p>
 
             {/* Code Input */}
-            <div className="flex gap-2 justify-center mb-6" onPaste={handlePaste}>
-              {code.map((digit, index) => (
-                <input
-                  key={index}
-                  ref={(el) => { inputRefs.current[index] = el }}
-                  type="text"
-                  inputMode="numeric"
-                  maxLength={1}
-                  value={digit}
-                  onChange={(e) => handleChange(index, e.target.value)}
-                  onKeyDown={(e) => handleKeyDown(index, e)}
-                  className="w-12 h-14 text-center text-2xl font-bold bg-gray-50 border border-gray-200 rounded-xl text-gray-800 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
-                  autoFocus={index === 0}
-                />
-              ))}
+            <div className="mb-6" onPaste={handlePaste}>
+              <input
+                ref={codeInputRef}
+                type="text"
+                inputMode="numeric"
+                maxLength={6}
+                value={code}
+                onChange={handleChange}
+                onKeyDown={handleKeyDown}
+                placeholder="000000"
+                className="w-full h-16 text-center text-3xl font-bold tracking-widest bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-300 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+                autoFocus
+              />
             </div>
 
             {error && (
@@ -159,8 +158,8 @@ export default function Verify() {
             )}
 
             <button
-              onClick={() => handleSubmit()}
-              disabled={isSubmitting || code.join('').length !== 6}
+              onClick={handleSubmit}
+              disabled={isSubmitting || code.length !== 6}
               className="w-full py-3.5 px-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white font-semibold rounded-xl hover:from-orange-600 hover:to-amber-600 hover:scale-[1.02] active:scale-[0.98] active:shadow-md focus:outline-none focus:ring-2 focus:ring-orange-400 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 transition-all shadow-lg shadow-orange-500/30"
             >
               {isSubmitting ? (
@@ -181,9 +180,10 @@ export default function Verify() {
               <p className="text-gray-500 text-sm mb-2">Didn't receive the code?</p>
               <button
                 onClick={handleResend}
-                className="text-orange-500 hover:text-orange-600 hover:scale-105 active:scale-95 text-sm font-semibold transition-all"
+                disabled={resendCooldown > 0}
+                className="text-orange-500 hover:text-orange-600 hover:scale-105 active:scale-95 text-sm font-semibold transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
               >
-                Resend code
+                {resendCooldown > 0 ? `Resend code (${resendCooldown}s)` : 'Resend code'}
               </button>
             </div>
           </div>
