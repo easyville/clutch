@@ -93,7 +93,7 @@ export default function Login() {
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
                   Essex Username
                 </label>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-2 overflow-hidden w-full">
                   <input
                     id="username"
                     type="text"
@@ -101,9 +101,9 @@ export default function Login() {
                     onChange={(e) => handleUsernameChange(e.target.value)}
                     placeholder="e.g., ab12345"
                     required
-                    className="flex-1 px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all"
+                    className="flex-1 min-w-0 px-3 sm:px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl text-gray-800 placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-orange-400 focus:border-transparent transition-all text-sm sm:text-base overflow-hidden"
                   />
-                  <span className="text-gray-500 text-sm font-medium">@essex.ac.uk</span>
+                  <span className="text-gray-500 text-xs sm:text-sm font-medium whitespace-nowrap flex-shrink-0">@essex.ac.uk</span>
                 </div>
               </div>
 
